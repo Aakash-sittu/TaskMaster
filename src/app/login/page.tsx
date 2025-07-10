@@ -1,6 +1,5 @@
 "use client"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -9,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useToast } from "@/hooks/use-toast"
+import { useEffect } from "react"
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -16,7 +16,6 @@ const formSchema = z.object({
 })
 
 export default function LoginPage() {
-  const router = useRouter()
   const { toast } = useToast()
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -38,9 +37,9 @@ export default function LoginPage() {
         localStorage.setItem("currentUser", JSON.stringify(user))
         toast({
           title: "Login Successful",
-          description: "Welcome back!",
+          description: "Welcome back! Redirecting...",
         })
-        router.push("/dashboard")
+        window.location.href = "/dashboard";
       } else {
         toast({
           variant: "destructive",
