@@ -20,7 +20,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const { toast } = useToast()
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<z.infer<typeof formSchema>>({    
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
@@ -29,38 +29,53 @@ export default function RegisterPage() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]")
-      const userExists = users.some((u: any) => u.email === values.email)
-
-      if (userExists) {
-        toast({
-          variant: "destructive",
-          title: "Registration Failed",
-          description: "An account with this email already exists.",
-        })
-        return
-      }
-
-      const newUser = {
-        id: new Date().toISOString(),
-        ...values,
-      }
-      users.push(newUser)
-      localStorage.setItem("users", JSON.stringify(users))
-
-      toast({
-        title: "Registration Successful",
-        description: "You can now log in with your new account.",
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
       })
-      router.push("/login")
-    } catch (error) {
-       toast({
-          variant: "destructive",
-          title: "An error occurred",
-          description: "Could not process your registration.",
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed')
+      }
+
+      // After successful registration, attempt to log in
+      const loginResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+        }),
+      })
+
+      if (loginResponse.ok) {
+        toast({
+          title: "Registration Successful",
+          description: "Welcome to TaskMaster! Redirecting to dashboard...",
         })
+        window.location.href = '/dashboard'
+      } else {
+        toast({
+          title: "Registration Successful",
+          description: "Please check your email to confirm your account, then log in.",
+        })
+        router.push("/login")
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: error instanceof Error ? error.message : "Could not process your registration.",
+      })
     }
   }
 
@@ -115,8 +130,11 @@ export default function RegisterPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Create an account
+              <Button 
+                type="submit" 
+                className="w-full bg-[#0071E3] hover:bg-[#0062C3] text-white"
+              >
+                Register
               </Button>
             </form>
           </Form>
