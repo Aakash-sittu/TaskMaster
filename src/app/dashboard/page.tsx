@@ -104,7 +104,7 @@ export default function DashboardPage() {
   }, [tasks]);
 
   if (isLoading) {
-    return <DashboardSkeleton />;
+ return <DashboardSkeleton />;
   }
 
   return (
@@ -112,17 +112,17 @@ export default function DashboardPage() {
       <DashboardHeader user={user} />
       <main className="flex-1 p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">Your Tasks</h1>
+ <div className="flex items-center justify-between mb-6 md:mb-8">
+ <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Your Tasks</h1>
             <Button onClick={openNewDialog}>
-              <PlusCircle className="mr-2 h-4 w-4" />
+ <PlusCircle className="mr-2 h-4 w-4" />
               New Task
             </Button>
           </div>
 
           {tasks.length === 0 ? (
             <EmptyState onNewTaskClick={openNewDialog} />
-          ) : (
+ ) : (
             <div className="space-y-8">
               <div>
                 <h2 className="text-lg font-semibold mb-4 text-muted-foreground">Incomplete</h2>
@@ -138,7 +138,7 @@ export default function DashboardPage() {
                       />
                     ))}
                   </div>
-                ) : <p className="text-sm text-muted-foreground italic">No incomplete tasks. Well done!</p>}
+ ) : <p className="text-sm text-muted-foreground italic">No incomplete tasks. Well done!</p>}
               </div>
               
               {completeTasks.length > 0 && (
@@ -155,7 +155,7 @@ export default function DashboardPage() {
                         />
                       ))}
                     </div>
-                  </div>
+ </div>
               )}
             </div>
           )}
