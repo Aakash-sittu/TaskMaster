@@ -27,7 +27,7 @@ A modern task management application built with Next.js, Supabase, and Tailwind 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/taskmaster.git
+   git clone https://github.com/Aaksh-sittu/taskmaster.git
    cd taskmaster
    ```
 
