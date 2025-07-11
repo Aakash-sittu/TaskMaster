@@ -1,5 +1,6 @@
 "use client"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -8,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useToast } from "@/hooks/use-toast"
-import { useEffect } from "react"
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -17,8 +17,9 @@ const formSchema = z.object({
 
 export default function LoginPage() {
   const { toast } = useToast()
+  const router = useRouter()
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<z.infer<typeof formSchema>>({    
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
@@ -26,33 +27,35 @@ export default function LoginPage() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]")
-      const user = users.find(
-        (u: any) => u.email === values.email && u.password === values.password // In a real app, passwords would be hashed and compared.
-      )
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      })
 
-      if (user) {
-        localStorage.setItem("currentUser", JSON.stringify(user))
-        toast({
-          title: "Login Successful",
-          description: "Welcome back! Redirecting...",
-        })
-        window.location.href = "/dashboard";
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Login Failed",
-          description: "Invalid email or password.",
-        })
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed')
       }
+
+      toast({
+        title: "Login Successful",
+        description: "Welcome back! Redirecting...",
+      })
+
+      // Force a hard reload to ensure all auth states are updated
+      window.location.href = '/dashboard'
     } catch (error) {
-       toast({
-          variant: "destructive",
-          title: "An error occurred",
-          description: "Could not process your login.",
-        })
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error instanceof Error ? error.message : "Could not process your login.",
+      })
     }
   }
 
@@ -94,7 +97,10 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
+              <Button 
+                type="submit" 
+                className="w-full bg-[#0071E3] hover:bg-[#0062C3] text-white"
+              >
                 Login
               </Button>
             </form>

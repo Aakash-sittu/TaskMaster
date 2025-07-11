@@ -1,11 +1,12 @@
 "use client";
-import { MoreHorizontal, Edit, Trash2, CheckCircle, Circle } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, CheckCircle, Circle, Flag } from "lucide-react";
 import { format } from 'date-fns';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import { type Task } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -17,14 +18,31 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onEdit, onDelete, onToggleStatus }: TaskCardProps) {
-  const isComplete = task.status === 'complete';
+  const isCompleted = task.status === 'completed';
+  
+  // Priority colors
+  const priorityColors = {
+    high: "bg-red-100 text-red-800 border-red-200",
+    medium: "bg-amber-100 text-amber-800 border-amber-200",
+    low: "bg-green-100 text-green-800 border-green-200",
+  };
 
+  // Default to medium if priority is not set
+  const priority = task.priority || 'medium';
+  
   return (
-    <Card className={cn("transition-all hover:shadow-md", isComplete && "bg-muted/50")}>
+    <Card className={cn("transition-all hover:shadow-md", isCompleted && "bg-muted/50")}>
       <CardHeader className="grid grid-cols-[1fr_auto] items-start gap-4 space-y-0">
         <div className="space-y-1">
-          <CardTitle className={cn("font-medium", isComplete && "line-through text-muted-foreground")}>{task.title}</CardTitle>
-          <CardDescription className={cn(isComplete && "line-through text-muted-foreground")}>
+          <div className="flex items-center gap-2">
+            <CardTitle className={cn("font-medium", isCompleted && "line-through text-muted-foreground")}>
+              {task.title}
+            </CardTitle>
+            <Badge variant="outline" className={cn(priorityColors[priority as keyof typeof priorityColors])}>
+              {priority}
+            </Badge>
+          </div>
+          <CardDescription className={cn(isCompleted && "line-through text-muted-foreground")}>
             {task.description}
           </CardDescription>
         </div>
@@ -32,13 +50,21 @@ export function TaskCard({ task, onEdit, onDelete, onToggleStatus }: TaskCardPro
           <div className="flex items-center space-x-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant={isComplete ? 'outline' : 'secondary'} size="icon" className="h-8 w-8" onClick={onToggleStatus}>
-                  {isComplete ? <Circle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4 text-accent" />}
+                <Button 
+                  variant={isCompleted ? 'outline' : 'secondary'} 
+                  size="icon" 
+                  className={cn("h-8 w-8", !isCompleted && "bg-[#0071E3]/10 hover:bg-[#0071E3]/20")}
+                  onClick={onToggleStatus}
+                >
+                  {isCompleted ? 
+                    <Circle className="h-4 w-4" /> : 
+                    <CheckCircle className="h-4 w-4 text-[#0071E3]" />
+                  }
                   <span className="sr-only">Toggle Status</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{isComplete ? 'Mark as Incomplete' : 'Mark as Complete'}</p>
+                <p>{isCompleted ? 'Mark as Incomplete' : 'Mark as Complete'}</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -69,9 +95,9 @@ export function TaskCard({ task, onEdit, onDelete, onToggleStatus }: TaskCardPro
           </div>
         </TooltipProvider>
       </CardHeader>
-      <CardFooter>
+      <CardFooter className="flex justify-between items-center">
         <div className="text-xs text-muted-foreground">
-          Created on {format(new Date(task.createdAt), "PPP")}
+          Created on {format(new Date(task.created_at), "PPP")}
         </div>
       </CardFooter>
     </Card>
